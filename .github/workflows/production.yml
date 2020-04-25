@@ -17,7 +17,11 @@ jobs:
           repository: ${{ secrets.DOCKER_USERNAME }}/devops-exercise
           tag_with_ref: true
   deploy: 
+    needs: build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: automation/ansible
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-python@v1
