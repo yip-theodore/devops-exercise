@@ -16,7 +16,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
           repository: ${{ secrets.DOCKER_USERNAME }}/devops-exercise
           tag_with_ref: true
-          tags: ${{ github.sha }}
+          tags: sha-${{ github.sha }}
   deploy: 
     needs: build
     runs-on: ubuntu-latest
@@ -41,4 +41,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           ANSIBLE_CFG: ./ansible.cfg
-        run: ansible-playbook -i inventory/ec2.py staging.yml -u ubuntu --key ~/.ssh/id_rsa --tags application -e "application_docker_image=${{ secrets.DOCKER_USERNAME }}/devops-exercise application_docker_tag=${{ github.sha }}"
+        run: ansible-playbook -i inventory/ec2.py staging.yml -u ubuntu --key ~/.ssh/id_rsa --tags application -e "application_docker_image=${{ secrets.DOCKER_USERNAME }}/devops-exercise application_docker_tag=sha-${{ github.sha }}"
