@@ -3,7 +3,7 @@ name: Production
 on: 
   release:
     types:
-      - created
+      - published
 
 jobs:
   build:
