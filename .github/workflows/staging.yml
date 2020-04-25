@@ -23,8 +23,9 @@ jobs:
       - uses: actions/setup-python@v1
       - name: Create SSH private key
         run: |
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > .ssh/id_rsa
-          chmod 600 .ssh/id_rsa
+          mkdir ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
       - name: Install dependencies
         run: |
           pip install ansible boto
@@ -34,4 +35,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           ANSIBLE_CFG: ./ansible.cfg
-        run: ansible-playbook -i inventory/ec2.py staging.yml -u ubuntu --key .ssh/id_rsa --tags application -e "application_docker_image=${{ secrets.DOCKER_USERNAME }}/devops-exercise application_docker_tag=latest"
+        run: ansible-playbook -i inventory/ec2.py staging.yml -u ubuntu --key ~/.ssh/id_rsa --tags application -e "application_docker_image=${{ secrets.DOCKER_USERNAME }}/devops-exercise application_docker_tag=latest"
