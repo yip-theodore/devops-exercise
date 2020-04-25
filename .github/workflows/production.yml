@@ -1,0 +1,40 @@
+name: Production
+
+on: 
+  release:
+    types:
+      - created
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: docker/build-push-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+          repository: ${{ secrets.DOCKER_USERNAME }}/devops-exercise
+          tag_with_ref: true
+  deploy: 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+      - name: Create SSH private key
+        run: |
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > .ssh/id_rsa
+          chmod 600 .ssh/id_rsa
+      - name: Install dependencies
+        run: |
+          pip install ansible boto
+          chmod 777 inventory/ec2.py
+      - name: Get release tag name
+        id: tag_name
+        run: echo ::set-output name=TAG::${GITHUB_REF/refs\/tags\//}
+      - name: Run ansible playbook
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          ANSIBLE_CFG: ./ansible.cfg
+        run: ansible-playbook -i inventory/ec2.py production.yml -u ubuntu --key .ssh/id_rsa --tags application -e "application_docker_image=${{ secrets.DOCKER_USERNAME }}/devops-exercise application_docker_tag=${{ steps.tag_name.outputs.TAG }}"
